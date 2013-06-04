@@ -4,33 +4,6 @@ from urlparse import urlparse, ParseResult
 import nrepl.bencode as bencode
 import threading
 
-def responses (transport, timeout=sys.float_info.max):
-    """A generator that produces messages received on the given transport.
-    Will block up to [timeout] seconds (a float).  The generator will
-    terminate only when the underlying transport is closed, or if a message
-    takes longer than [timeout] seconds to arrive."""
-    while True:
-        x = transport.recv(timeout)
-        if not x: break
-        yield x
-
-# def client (transport, timeout):
-#    """Returns a fn of zero and one argument, both of which return the current head of a single
-#    response-seq being read off of the given client-side transport.  The one-arg arity will
-#    send a given message on the transport before returning the seq.
-# 
-#    Most REPL interactions are best performed via `message` and `client-session` on top of
-#    a client fn returned from here."""
-#    head = None
-#    def restart ():
-#        return head = responses(transport, timeout)
-#    def client_fn (message=None):
-#        if message: transport.send(message)
-#        return restart()
-
-def socket_connect (host, port, transport_fn):
-    transport_fn(socket.create_connection((host, port)))
-
 def _bencode_connect (uri):
     s = socket.create_connection(uri.netloc.split(":"))
     # TODO I don't think .close() will propagate to the socket automatically...
@@ -43,7 +16,9 @@ def _match_criteria (criteria, msg):
         if isinstance(v, set):
             if mv not in v:
                 return False
-        elif m != mv:
+        elif not v and mv:
+            pass
+        elif not mv or v != mv:
             return False
     return True
 
@@ -54,7 +29,7 @@ class WatchableConnection (object):
         class Monitor (threading.Thread):
             def run (_):
                 for incoming in self._IO:
-                    for key, (pred, callback) in self._watches:
+                    for key, (pred, callback) in self._watches.items():
                         if pred(incoming): callback(incoming, self, key)
         self._thread = Monitor()
         self._thread.daemon = True
