@@ -11,8 +11,14 @@ class BencodeTest (unittest.TestCase):
 
 class REPLTest (unittest.TestCase):
     def setUp (self):
-        self.proc = subprocess.Popen(["lein", "repl", ":headless"],
-                stdout=subprocess.PIPE)
+        # this here only to accommodate travis, which puts leiningen @ lein2
+        try:
+            self.proc = subprocess.Popen(["lein2", "repl", ":headless"],
+                    stdout=subprocess.PIPE)
+        except OSError, e:
+            self.proc = subprocess.Popen(["lein", "repl", ":headless"],
+                    stdout=subprocess.PIPE)
+
         self.port = re.findall(r"\d+", self.proc.stdout.readline())[0]
         self.proc.stdout.close()
 
