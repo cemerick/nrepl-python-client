@@ -33,23 +33,16 @@ class WatchableConnection (object):
         messages, e.g. bencode.BencodeIO."""
         self._IO = IO
         self._watches = {}
+        self._watches_lock = threading.RLock()
         class Monitor (threading.Thread):
             def run (_):
+                watches = None
                 for incoming in self._IO:
-                    # Dirty hack so we can iterate over the list.
-                    # RuntimeError: dictionary changed size during iteration (Python3)
-                    # So we just force out an iteration, even tho we get errors.
-                    # Better approach is wanted, but all tests are passing, so yeah.
-                    while True:
-                        try:
-                            for key, (pred, callback) in self._watches.items():
-                                if pred(incoming): 
-                                    callback(incoming, self, key)
-                        except RuntimeError as e:
-                            pass
-                        finally:
-                            break
-
+                    with self._watches_lock:
+                        watches = dict(self._watches)
+                    for key, (pred, callback) in self._watches.items():
+                        if pred(incoming): 
+                            callback(incoming, self, key)
         self._thread = Monitor()
         self._thread.daemon = True
         self._thread.start()
@@ -63,7 +56,8 @@ class WatchableConnection (object):
 
     def unwatch (self, key):
         "Removes the watch previously registered with [key]."
-        self._watches.pop(key, None)
+        with self._watches_lock:
+            self._watches.pop(key, None)
 
     def watch (self, key, criteria, callback):
         """Registers a new watch under [key] (which can be used with `unwatch()`
@@ -77,7 +71,8 @@ class WatchableConnection (object):
             pred = criteria
         else:
             pred = lambda incoming: _match_criteria(criteria, incoming) 
-        self._watches[key] = (pred, callback)
+        with self._watches_lock:
+            self._watches[key] = (pred, callback)
 
 # others can add in implementations here
 _connect_fns = {"nrepl": _bencode_connect}
