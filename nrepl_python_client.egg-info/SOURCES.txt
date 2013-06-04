@@ -1,0 +1,9 @@
+setup.py
+nrepl/__init__.py
+nrepl/bencode.py
+nrepl_python_client.egg-info/PKG-INFO
+nrepl_python_client.egg-info/SOURCES.txt
+nrepl_python_client.egg-info/dependency_links.txt
+nrepl_python_client.egg-info/requires.txt
+nrepl_python_client.egg-info/top_level.txt
+nrepl_python_client.egg-info/zip-safe
