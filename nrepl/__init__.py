@@ -24,6 +24,9 @@ def _match_criteria (criteria, msg):
 
 class WatchableConnection (object):
     def __init__ (self, IO):
+        """Create a new WatchableConnection with an nREPL message transport
+        supporting `read()` and `write()` methods that return and accept nREPL
+        messages, e.g. bencode.BencodeIO."""
         self._IO = IO
         self._watches = {}
         class Monitor (threading.Thread):
@@ -39,12 +42,21 @@ class WatchableConnection (object):
         self._IO.close()
 
     def send (self, message):
+        "Send an nREPL message."
         self._IO.write(message)
 
     def unwatch (self, key):
+        "Removes the watch previously registered with [key]."
         self._watches.pop(key, None)
 
     def watch (self, key, criteria, callback):
+        """Registers a new watch under [key] (which can be used with `unwatch()`
+        to remove the watch) that filters messages using [criteria] (may be a
+        predicate or a 'criteria dict' [see the README for more info there]).
+        Matching messages are passed to [callback], which must accept three
+        arguments: the matched incoming message, this instance of
+        `WatchableConnection`, and the key under which the watch was
+        registered."""
         if hasattr(criteria, '__call__'):
             pred = criteria
         else:
@@ -62,12 +74,11 @@ def connect (uri):
       telnet://localhost:5000
       http://your-app-name.heroku.com/repl
 
-    This fn delegates to another looked up in  that dispatches on the scheme of the URI provided
-    (which can be a string or java.net.URI).  By default, implementations for
-    nrepl (corresponding to using the default bencode transport) and
-    http/https (using the drawbridge-compatible transport in nrepl.http) are
-    registered.  Alternative implementations may add support for other schemes,
-    such as JMX, various message queues, etc."""
+    This fn delegates to another looked up in  that dispatches on the scheme of
+    the URI provided (which can be a string or java.net.URI).  By default, only
+    `nrepl` (corresponding to using the default bencode transport) is supported.
+    Alternative implementations may add support for other schemes, such as
+    http/https, JMX, various message queues, etc."""
     #
     uri = uri if isinstance(uri, ParseResult) else urlparse(uri)
     if not uri.scheme:

@@ -8,15 +8,79 @@ It pretty much works.
 Requires Python 2.7.  Will work with any nREPL >= 0.2.0 endpoint that uses the
 default bencode socket transport.  Support for [other
 transports](https://github.com/clojure/tools.nrepl/wiki/Extensions#transports)
-should be straightforward, thanks to a unpythonic multimethod thing that
+should be straightforward, thanks to an unpythonic multimethod thing that
 `nrepl.connect()` uses.
+
+## Usage
+
+Two options, currently.  First, explicit, synchronous send/receive of messages
+to an nREPL endpoint:
+
+```python
+>>> import nrepl
+>>> c = nrepl.connect("nrepl://localhost:58226")
+>>> c.write({"op": "eval", "code": "(reduce + (range 20))"})
+>>> c.read()
+{u'session': u'7fb4b7a0-f9e5-4f5f-b506-eb2d0a6e21b1', u'ns': u'user', u'value': u'190'}
+>>> c.read()
+{u'status': [u'done'], u'session': u'7fb4b7a0-f9e5-4f5f-b506-eb2d0a6e21b1'}
+```
+
+`WatchableConnection` provides a facility vaguely similar to Clojure watches,
+where a function is called asynchronously when an nREPL response is received if
+a predicate or a set of pattern-matching criteria provided with that function
+matches the response.  For example (from the tests), this code will
+asynchronously capture `out` (i.e. `stdout`) content from multiple
+sessions' responses:
+
+```python
+c = nrepl.connect("nrepl://localhost:58226")
+wc = nrepl.WatchableConnection(c)
+outs = {}
+def add_resp (session, msg):
+    out = msg.get("out", None)
+    if out: outs[session].append(out)
+
+def watch_new_sessions (msg, wc, key):
+    session = msg.get("new-session")
+    outs[session] = []
+    wc.watch("session" + session, {"session": session},
+            lambda msg, wc, key: add_resp(session, msg))
+
+wc.watch("sessions", {"new-session": None}, watch_new_sessions)
+wc.send({"op": "clone"})
+wc.send({"op": "clone"})
+wc.send({"op": "eval", "session": outs.keys()[0],
+         "code": '(println "hello" "%s")' % outs.keys()[0]})
+wc.send({"op": "eval", "session": outs.keys()[1],
+         "code": '(println "hello" "%s")' % outs.keys()[1]})
+outs
+#>> {u'fee02643-c5c6-479d-9fb4-d1934cfdd29f': [u'hello fee02643-c5c6-479d-9fb4-d1934cfdd29f\n'],
+     u'696130c8-0310-4bb2-a880-b810d2a198d0': [u'hello 696130c8-0310-4bb2-a880-b810d2a198d0\n']}
+```
+
+The watch criteria dicts (e.g. `{"new-session": None}`) are used to constrain
+which responses received by the `WatchableConnection` will be passed to the
+corresponding callbacks:
+
+* `{"new-session": None}` will match any response that has any value in the
+  `"new-session"` slot
+* `{"session": session}` will match any response that has the value `session` in
+  the `"session"` slot.
+
+Sets may also be used as values in criteria dicts to match responses that
+contain any of the set's values in the slot that the set is fond in the criteria
+dict.
+
+Finally, regular predicates may be passed to `watch()` to handle more complex
+filtering.
+
+The callbacks provided to `watch()` must accept three arguments: the matched
+incoming message, the instance of `WatchableConnection`, and the key under which
+the watch was registered.
 
 ## Send help
 
-* Patches / pull requests that contain good docs suitable for people that are
-  likely to use this would be great.  There's not a lot of code, and some
-  not-horrible tests, so usage shouldn't be too hard to figure out, but proper
-  documentation would be nice.
 * Make this a Proper Python Library.  I've been away from Python for a loooooong
   time, and I don't know what the current best practices are around eggs,
   distribution, and so on.  There's a stub of egg-info stuff here, but it's
