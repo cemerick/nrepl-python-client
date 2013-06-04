@@ -85,7 +85,7 @@ class REPLTest (unittest.TestCase):
                 "code": """(do (future (Thread/sleep %s00)
                 (println %s)
                 (println (System/currentTimeMillis))))""" % (i, i)})
-        time.sleep(1)
+        time.sleep(2)
         for i, (session, _outs) in enumerate(outs.items()):
             self.assertEqual(i, int(_outs[0]))
         # Python3 got dicts that we cant slice, thus we wrap it in a list.
