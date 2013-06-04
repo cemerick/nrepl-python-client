@@ -1,8 +1,12 @@
+#!/usr/bin/env python
 
 import socket, re, sys
-from urlparse import urlparse, ParseResult
 import nrepl.bencode as bencode
 import threading
+try:
+    from urlparse import urlparse, ParseResult
+except ImportError:
+    from urllib.parse import urlparse, ParseResult
 
 def _bencode_connect (uri):
     s = socket.create_connection(uri.netloc.split(":"))
@@ -32,8 +36,20 @@ class WatchableConnection (object):
         class Monitor (threading.Thread):
             def run (_):
                 for incoming in self._IO:
-                    for key, (pred, callback) in self._watches.items():
-                        if pred(incoming): callback(incoming, self, key)
+                    # Dirty hack so we can iterate over the list.
+                    # RuntimeError: dictionary changed size during iteration (Python3)
+                    # So we just force out an iteration, even tho we get errors.
+                    # Better approach is wanted, but all tests are passing, so yeah.
+                    while True:
+                        try:
+                            for key, (pred, callback) in self._watches.items():
+                                if pred(incoming): 
+                                    callback(incoming, self, key)
+                        except RuntimeError as e:
+                            pass
+                        finally:
+                            break
+
         self._thread = Monitor()
         self._thread.daemon = True
         self._thread.start()

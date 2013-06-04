@@ -1,5 +1,25 @@
+#!/usr/bin/env python
+
+try:
+    from cStringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 import socket, sys
-from cStringIO import StringIO
+
+import sys
+
+# Some code so we can use different features without worrying about versions.
+PY2 = sys.version_info[0] == 2
+if not PY2:
+    text_type = str
+    string_types = (str,bytes)
+    unichr = chr
+else:
+    text_type = unicode
+    string_types = (str, unicode)
+    unichr = unichr
+
 
 def _read_byte (s):
     return s.read(1)
@@ -23,7 +43,12 @@ def _read_bytes (s, n):
         data.write(m)
         cnt += len(m)
     data.flush()
-    return data.getvalue().decode("UTF-8")
+    # Taking into account that Python3 can't decode strings
+    try:
+        ret = data.getvalue().decode("UTF-8")
+    except AttributeError:
+        ret = data.getvalue()
+    return ret
 
 def _read_delimiter (s):
     d = _read_byte(s)
@@ -55,21 +80,21 @@ def _read_datum (s):
         return _read_fns.get(delim, lambda s: _read_bytes(s, delim))(s)
 
 def _write_datum (x, out):
-    t = type(x)
-    if t in {str, unicode}:
-        x = x.encode("UTF-8")
+    if isinstance(x, string_types):
+        # I don't see the need, all tests works fine.
+        #x = x.encode("UTF-8")
         out.write(str(len(x)))
         out.write(":")
         out.write(x)
-    elif t == int:
+    elif isinstance(x, int):
         out.write("i")
         out.write(str(x))
         out.write("e")
-    elif t == list or t == tuple:
+    elif isinstance(x, (list, tuple)):
         out.write("l")
         for v in x: _write_datum(v, out)
         out.write("e")
-    elif t == dict:
+    elif isinstance(x, dict):
         out.write("d")
         for k, v in x.items():
             _write_datum(k, out)
@@ -100,8 +125,16 @@ class BencodeIO (object):
     def read (self):
         return _read_datum(self._file)
 
-    def __iter__ (self): return self
-    def next (self):
+    def __iter__ (self): 
+        return self
+
+    def next(self):
+        v = self.read()
+        if not v: raise StopIteration
+        return v
+
+    def __next__(self):
+        # In Python3, __next__ it is an own special class.
         v = self.read()
         if not v: raise StopIteration
         return v

@@ -1,11 +1,24 @@
+#!/usr/bin/env python
 import os, unittest, subprocess, re, signal, time
 import nrepl
+from collections import OrderedDict
 from nrepl.bencode import encode, decode
+
+import sys
+PY2 = sys.version_info[0] == 2
+if not PY2:
+    port_type = bytes
+else:
+    port_type = ()
 
 class BencodeTest (unittest.TestCase):
     def test_encoding (self):
-        self.assertEqual('d1:ai1e1:cld1:xl1:yeee1:bli2eli3eeee',
-                encode({"a": 1, "b": [2, [3]], "c": [{"x": ["y"]}]}))
+
+        # Python3 treats dicts differently. For the sake of testing we use a ordered dict so the order does not change.
+        test_values = OrderedDict((("a", 1), ("b", [2, [3]]), ("c", [{"x": ["y"]}])))
+        
+        self.assertEqual('d1:ai1e1:bli2eli3eee1:cld1:xl1:yeeee',
+                encode(test_values))
         self.assertEqual([{u'a': 1, u'c': [{u'x': [u'y']}], u'b': [2, [3]]}],
                 list(decode('d1:ai1e1:cld1:xl1:yeee1:bli2eli3eeee')))
 
@@ -15,11 +28,15 @@ class REPLTest (unittest.TestCase):
         try:
             self.proc = subprocess.Popen(["lein2", "repl", ":headless"],
                     stdout=subprocess.PIPE)
-        except OSError, e:
+        except OSError:
             self.proc = subprocess.Popen(["lein", "repl", ":headless"],
                     stdout=subprocess.PIPE)
 
-        self.port = re.findall(r"\d+", self.proc.stdout.readline())[0]
+        self.port = re.findall(b"\d+", self.proc.stdout.readline())[0]
+
+        # Because Python3 gives us a bytestring, we need to turn it into a string
+        if isinstance(self.port, port_type):
+            self.port = self.port.decode('utf-8')
         self.proc.stdout.close()
 
     def tearDown (self):
@@ -27,6 +44,7 @@ class REPLTest (unittest.TestCase):
         # down the leiningen/clojure/nrepl process(es)
         c = nrepl.connect("nrepl://localhost:" + self.port)
         c.write({"op": "eval", "code": "(System/exit 0)"})
+        self.proc.kill()
 
     def test_simple_connection (self):
         c = nrepl.connect("nrepl://localhost:" + self.port)
@@ -69,8 +87,9 @@ class REPLTest (unittest.TestCase):
         time.sleep(1)
         for i, (session, _outs) in enumerate(outs.items()):
             self.assertEqual(i, int(_outs[0]))
-        self.assertTrue(int(outs.values()[0][1]) < int(outs.values()[1][1]))
-
+        # Python3 got dicts that we cant slice, thus we wrap it in a list.
+        outs_values = list(outs.values())
+        self.assertTrue(int(outs_values[0][1]) < int(outs_values[1][1]))
 
 if __name__ == '__main__':
     unittest.main()
