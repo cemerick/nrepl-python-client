@@ -5,7 +5,7 @@ written in Python.
 
 It pretty much works.
 
-Requires Python 2.7.  Will work with any nREPL >= 0.2.0 endpoint that uses the
+Requires Python 2.7 or 3.3.  Will work with any nREPL >= 0.2.0 endpoint that uses the
 default bencode socket transport.  Support for [other
 transports](https://github.com/clojure/tools.nrepl/wiki/Extensions#transports)
 should be straightforward, thanks to an unpythonic multimethod thing that
