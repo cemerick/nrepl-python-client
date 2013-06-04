@@ -81,7 +81,9 @@ def _read_datum (s):
 
 def _write_datum (x, out):
     if isinstance(x, string_types):
-        x = x.encode("UTF-8")
+        #x = x.encode("UTF-8")
+        # TODO revisit encodings, this is surely not right. Python (2.x, anyway)
+        # conflates bytes and strings, but 3.x does not...
         out.write(str(len(x)))
         out.write(":")
         out.write(x)
