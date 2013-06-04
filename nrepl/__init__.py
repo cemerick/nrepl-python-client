@@ -40,7 +40,7 @@ class WatchableConnection (object):
                 for incoming in self._IO:
                     with self._watches_lock:
                         watches = dict(self._watches)
-                    for key, (pred, callback) in self._watches.items():
+                    for key, (pred, callback) in watches.items():
                         if pred(incoming): 
                             callback(incoming, self, key)
         self._thread = Monitor()
