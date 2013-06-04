@@ -81,8 +81,7 @@ def _read_datum (s):
 
 def _write_datum (x, out):
     if isinstance(x, string_types):
-        # I don't see the need, all tests works fine.
-        #x = x.encode("UTF-8")
+        x = x.encode("UTF-8")
         out.write(str(len(x)))
         out.write(":")
         out.write(x)
