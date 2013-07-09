@@ -6,7 +6,6 @@
 
     Links
     `````
-    * `documentation <http://packages.python.org/nrepl-python-client>`_
     * `development version <https://github.com/cemerick/nrepl-python-client>`_
 '''
 
