@@ -6,7 +6,6 @@
 
     Links
     `````
-    * `documentation <http://packages.python.org/nrepl-python-client>`_
     * `development version <https://github.com/cemerick/nrepl-python-client>`_
 '''
 
@@ -32,8 +31,10 @@ setup(name="nrepl-python-client",
       author_email="chas@cemerick.com",
       description=description,
       long_description=__doc__,
+      test_suite='test',
       license="BSD 3-clause",
       keywords="clojure repl nrepl",
       url="https://github.com/cemerick/nrepl-python-client",
       zip_safe=True,
+      platforms='any',
       classifiers=classifiers)
