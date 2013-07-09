@@ -15,3 +15,5 @@ classes
 build
 *.pyc
 dist
+
+*.egg*
