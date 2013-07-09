@@ -11,6 +11,17 @@ transports](https://github.com/clojure/tools.nrepl/wiki/Extensions#transports)
 should be straightforward, thanks to an unpythonic multimethod thing that
 `nrepl.connect()` uses.
 
+## Installation
+
+Clone from here and use the source, or you can install from
+[PyPI](https://pypi.python.org/pypi/nrepl-python-client), e.g.:
+
+```
+easy_install nrepl-python-client
+```
+
+Do whatever the analogue is for `pip`, etc.
+
 ## Usage
 
 Two options, currently.  First, explicit, synchronous send/receive of messages
@@ -81,10 +92,11 @@ the watch was registered.
 
 ## Send help
 
-* Make this a Proper Python Library.  I've been away from Python for a loooooong
-  time, and I don't know what the current best practices are around eggs,
-  distribution, and so on.  There's a stub of egg-info stuff here, but it's
-  likely broken.
+* Make this a _more_ Proper Python Library.  I've been away from Python for a
+  loooooong time, and I don't know what the current best practices are around
+  eggs, distribution, and so on.  The library is on PyPI, but may not be
+  following the latest best practices for all I know.  Open an issue if you see
+  a problem or some corner that could be made better.
 * Fix my busted Python.  Like I said, the last time I did any serious Pythoning
   was in the 2.3 days or something (to use new-style classes, or not, that was
   the question, etc).  If I goofed, open an issue with a fix.
