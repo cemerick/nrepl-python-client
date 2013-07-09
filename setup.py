@@ -35,4 +35,5 @@ setup(name="nrepl-python-client",
       keywords="clojure repl nrepl",
       url="https://github.com/cemerick/nrepl-python-client",
       zip_safe=True,
+      platforms='any',
       classifiers=classifiers)
