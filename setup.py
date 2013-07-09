@@ -24,7 +24,7 @@ classifiers = ['Development Status :: 4 - Beta',
                'Topic :: Utilities']
 
 setup(name="nrepl-python-client",
-      version="0.0.2",
+      version="0.0.3",
       packages=find_packages(),
       # metadata for upload to PyPI
       author="Chas Emerick",
