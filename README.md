@@ -16,11 +16,15 @@ should be straightforward, thanks to an unpythonic multimethod thing that
 Clone from here and use the source, or you can install from
 [PyPI](https://pypi.python.org/pypi/nrepl-python-client), e.g.:
 
-```
-easy_install nrepl-python-client
+```sh
+$ easy_install nrepl-python-client
 ```
 
-Do whatever the analogue is for `pip`, etc.
+Or alternatively:
+
+```sh
+$ pip install nrepl-python-client
+```
 
 ## Usage
 
