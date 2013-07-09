@@ -16,12 +16,12 @@ description = "A Python client for the nREPL Clojure networked-REPL server."
 classifiers = ['Development Status :: 4 - Beta',
                'Environment :: Console',
                'Intended Audience :: Developers',
-               'License :: OSI Approved :: BSD License'
-               'Natural Language :: English'
+               'License :: OSI Approved :: BSD License',
+               'Natural Language :: English',
                'Operating System :: OS Independent',
                'Programming Language :: Python',
                'Topic :: Software Development :: Interpreters',
-               'Topic :: Software Development :: Libraries :: Python Modules'
+               'Topic :: Software Development :: Libraries :: Python Modules',
                'Topic :: Utilities']
 
 setup(name="nrepl-python-client",
