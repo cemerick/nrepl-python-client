@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+'''
+    nrepl.bencode
+    -------------
+
+    This module provides BEncode-protocol support.
+
+    :copyright: (c) 2013 by Chas Emerick.
+    :license: MIT, see LICENSE for more details.
+'''
+
+
 try:
     from cStringIO import StringIO
 except ImportError:
