@@ -9,7 +9,17 @@
     * `development version <https://github.com/cemerick/nrepl-python-client>`_
 '''
 
+import os
+
 from setuptools import setup, find_packages
+
+# HACK: Pull the version number without requiring the package to be installed
+# beforehand, i.e. without using import.
+module_path = os.path.join(os.path.dirname(__file__), 'nrepl/__init__.py')
+version_line = [line for line in open(module_path)
+                if line.startswith('__version_info__')][0]
+
+__version__ = '.'.join(eval(version_line.split('__version_info__ = ')[-1]))
 
 description = "A Python client for the nREPL Clojure networked-REPL server."
 classifiers = ['Development Status :: 4 - Beta',
@@ -24,7 +34,7 @@ classifiers = ['Development Status :: 4 - Beta',
                'Topic :: Utilities']
 
 setup(name="nrepl-python-client",
-      version="0.0.3",
+      version=__version__,
       packages=find_packages(),
       # metadata for upload to PyPI
       author="Chas Emerick",
