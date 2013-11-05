@@ -146,8 +146,9 @@ def decode(string):
 
 
 class BencodeIO(object):
-    def __init__(self, file):
+    def __init__(self, file, on_close=None):
         self._file = file
+        self._on_close = on_close
 
     def read(self):
         return _read_datum(self._file)
@@ -176,4 +177,10 @@ class BencodeIO(object):
             self._file.flush()
 
     def close(self):
-        self._file.close()
+        # Run the on_close handler if one exists, which can do something
+        # useful like cleanly close a socket. (Note that .close() on a
+        # socket.makefile('rw') does some kind of unclean close.)
+        if self._on_close is not None:
+            self._on_close()
+        else:
+            self._file.close()
