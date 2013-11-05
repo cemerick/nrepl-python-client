@@ -29,9 +29,8 @@ __all__ = ['connect', 'WatchableConnection']
 
 def _bencode_connect(uri):
     s = socket.create_connection(uri.netloc.split(":"))
-    # TODO I don't think .close() will propagate to the socket automatically...
     f = s.makefile('rw')
-    return bencode.BencodeIO(f)
+    return bencode.BencodeIO(f, on_close=s.close)
 
 
 def _match_criteria(criteria, msg):
